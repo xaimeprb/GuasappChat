@@ -1,39 +1,45 @@
+###########################
+# MAVEN / JAVA PROJECTS   #
+###########################
+
+# Maven build directories
 target/
-!.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-.kotlin
+!.mvn/wrapper/maven-wrapper.jar
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
-*.iws
+# Java
+*.class
+*.log
+
+###########################
+# INTELLIJ IDEA           #
+###########################
+
+# Entire IDEA folder — should NEVER be committed
+.idea/
+
+# IntelliJ module files
 *.iml
+*.iws
 *.ipr
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# IntelliJ build output
+out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+###########################
+# OS / EDITOR FILES       #
+###########################
 
-### VS Code ###
-.vscode/
-
-### Mac OS ###
+# macOS
 .DS_Store
+
+# Windows
+Thumbs.db
+
+###########################
+# OPTIONAL (remove if not needed)
+###########################
+
+# VSCode (only if you don't use it)
+.vscode/

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="psp.chat.cliente.controlador.ControladorMsjBurbuja"
+      alignment="CENTER_LEFT">
+
+    <padding>
+        <Insets top="2" right="10" bottom="2" left="10"/>
+    </padding>
+
+    <VBox maxWidth="400"
+          style="-fx-background-color: #FFFFFF; -fx-background-radius: 12; -fx-border-color: #E0E0E0;">
+        <padding>
+            <Insets top="6" right="8" bottom="4" left="8"/>
+        </padding>
+
+        <Label fx:id="lblRemitente"
+               style="-fx-font-size: 10px; -fx-text-fill: #555555;"/>
+
+        <Label fx:id="lblTexto"
+               wrapText="true"/>
+
+        <Label fx:id="lblHora"
+               style="-fx-font-size: 9px; -fx-text-fill: gray;"
+               alignment="BOTTOM_RIGHT"/>
+    </VBox>
+
+</HBox>

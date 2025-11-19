@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<HBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="psp.chat.cliente.controlador.ControladorItemConversacion"
+      spacing="8" prefHeight="60">
+
+    <padding>
+        <Insets top="8" right="8" bottom="8" left="8"/>
+    </padding>
+
+    <VBox spacing="2" HBox.hgrow="ALWAYS">
+        <Label fx:id="lblAlias"
+               style="-fx-font-weight: bold;"/>
+
+        <Label fx:id="lblUltimoMensaje"
+               style="-fx-text-fill: gray; -fx-font-size: 11px;"
+               maxWidth="220"
+               wrapText="true"/>
+    </VBox>
+
+    <Label fx:id="lblHoraUltimoMensaje"
+           style="-fx-font-size: 10px; -fx-text-fill: gray;"/>
+</HBox>

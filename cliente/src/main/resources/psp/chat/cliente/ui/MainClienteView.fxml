@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane prefHeight="600" prefWidth="900" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="psp.chat.cliente.controlador.MainControladorCliente">
+
+    <!-- Panel izquierdo: lista de conversaciones -->
+    <left>
+        <VBox prefWidth="300" spacing="5">
+            <padding>
+                <Insets bottom="10" left="10" right="5" top="10" />
+            </padding>
+
+            <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Conversaciones" />
+
+            <ListView fx:id="listViewConversaciones" VBox.vgrow="ALWAYS" />
+        </VBox>
+    </left>
+
+    <!-- Panel derecho: conversación activa -->
+    <center>
+        <BorderPane>
+
+            <!-- Cabecera de la conversación -->
+            <top>
+                <VBox spacing="2">
+                    <padding>
+                        <Insets bottom="8" left="10" right="10" top="8" />
+                    </padding>
+                    <Label fx:id="lblNombreContactoActual" style="-fx-font-size: 16px; -fx-font-weight: bold;" />
+                    <Label fx:id="lblIpContactoActual" style="-fx-font-size: 12px; -fx-text-fill: gray;" />
+                </VBox>
+            </top>
+
+            <!-- Mensajes -->
+            <center>
+                <ScrollPane fx:id="scrollMensajes" fitToWidth="true" prefHeight="505.0" prefWidth="600.0">
+                    <content>
+                        <VBox fx:id="contenedorMensajes" spacing="6">
+                            <padding>
+                                <Insets bottom="10" left="10" right="10" top="10" />
+                            </padding>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </center>
+
+            <!-- Área de escritura -->
+            <bottom>
+                <HBox spacing="5">
+                    <padding>
+                        <Insets bottom="10" left="10" right="10" top="5" />
+                    </padding>
+
+                    <TextArea fx:id="txtMensaje" prefRowCount="2" promptText="Escribe un mensaje..." HBox.hgrow="ALWAYS" />
+
+                    <Button fx:id="btnEnviar" onAction="#manejarEnviarMensaje" prefHeight="40" text="Enviar" />
+                </HBox>
+            </bottom>
+
+        </BorderPane>
+    </center>
+
+</BorderPane>
