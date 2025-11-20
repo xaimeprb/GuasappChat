@@ -13,9 +13,16 @@
                 <Insets bottom="10" left="10" right="5" top="10" />
             </padding>
 
+            <!-- Sección de Conversaciones -->
             <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Conversaciones" />
-
             <ListView fx:id="listViewConversaciones" VBox.vgrow="ALWAYS" />
+
+            <!-- Línea separadora visual -->
+            <Separator />
+
+            <!-- Sección de Usuarios conectados -->
+            <Label style="-fx-font-weight: bold; -fx-font-size: 14px;" text="Usuarios conectados" />
+            <ListView fx:id="listViewConectados" prefHeight="150" />
         </VBox>
     </left>
 

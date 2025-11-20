@@ -1,129 +1,139 @@
 package psp.chat.general.modelo;
 
+import java.util.Objects;
+import java.util.UUID;
+
 /**
- * Representa un contacto conocido por el sistema.
- * Asocia una IP o identificador técnico con un alias visible.
+ * Representa un contacto identificado de forma única en el sistema.
+ *
+ * Cada contacto tiene:
+ *  - idContacto: identificador global único y persistente
+ *  - ipRemota: información técnica (no define identidad)
+ *  - aliasVisible: nombre mostrado al usuario
+ *
+ * NOTA IMPORTANTE:
+ *   La identidad YA NO depende de la IP.
+ *   La IP ahora es solo metadato informativo.
  */
 public class Contacto {
 
+    /** Identificador único del contacto (persistente). */
+    private String idContacto;
+
+    /** Última IP desde la que se ha conectado este contacto. */
     private String ipRemota;
+
+    /** Alias que se muestra en la UI del cliente. */
     private String aliasVisible;
 
+
     /**
-     * Constructor vacío requerido por librerías como Gson.
+     * Constructor vacío requerido por Gson.
+     * Garantiza inicialización segura.
      */
     public Contacto() {
-
+        this.idContacto = UUID.randomUUID().toString();
         this.ipRemota = "";
         this.aliasVisible = "";
-
     }
 
     /**
-     * Crea un contacto con datos iniciales
+     * Crea un contacto nuevo desde cero.
      *
-     * @param ipRemota IP o identificador remoto
-     * @param aliasVisible alias visible
+     * @param ipRemota     IP desde la que se conecta el cliente
+     * @param aliasVisible alias elegido por el usuario
      */
     public Contacto(String ipRemota, String aliasVisible) {
 
-        if (ipRemota != null) {
+        this.idContacto = UUID.randomUUID().toString();
 
-            this.ipRemota = ipRemota;
-
-        } else {
-
-            this.ipRemota = "";
-
-        }
-
-        if (aliasVisible != null) {
-
-            this.aliasVisible = aliasVisible;
-
-        } else {
-
-            this.aliasVisible = "";
-
-        }
-
+        this.ipRemota = (ipRemota != null) ? ipRemota : "";
+        this.aliasVisible = (aliasVisible != null) ? aliasVisible : "";
     }
 
-    /**
-     * @return IP o identificador remoto
-     */
+
+    /* ===========================
+       Getters / Setters
+       =========================== */
+
+    public String getIdContacto() {
+        return idContacto;
+    }
+
     public String getIpRemota() {
         return ipRemota;
     }
 
-    /**
-     * Establece la IP remota del contacto
-     */
     public void setIpRemota(String ipRemota) {
-
-        if (ipRemota != null) {
-
-            this.ipRemota = ipRemota;
-
-        } else {
-
-            this.ipRemota = "";
-
-        }
-
+        this.ipRemota = (ipRemota != null) ? ipRemota : "";
     }
 
-    /**
-     * @return alias visible del contacto
-     */
     public String getAliasVisible() {
         return aliasVisible;
     }
 
-    /**
-     * Cambia el alias visible del contacto.
-     */
     public void setAliasVisible(String aliasVisible) {
-
-        if (aliasVisible != null) {
-
-            this.aliasVisible = aliasVisible;
-
-        } else {
-
-            this.aliasVisible = "";
-
-        }
-
+        this.aliasVisible = (aliasVisible != null) ? aliasVisible : "";
     }
+
+
+    /* ===========================
+       Utilidad
+       =========================== */
+
+    /**
+     * Descripción corta para logs y depuración.
+     * Ejemplo: "JorgePalotes - 127.0.0.1"
+     */
+    public String descripcionCorta() {
+
+        String alias = (aliasVisible != null && !aliasVisible.isBlank())
+                ? aliasVisible
+                : "(sin alias)";
+
+        String ip = (ipRemota != null && !ipRemota.isBlank())
+                ? ipRemota
+                : "(sin IP)";
+
+        return alias + " - " + ip;
+    }
+
 
     @Override
     public String toString() {
-        return "Contacto{ip='" + ipRemota + "', alias='" + aliasVisible + "'}";
+        String textoAlias = (aliasVisible != null && !aliasVisible.isEmpty())
+                ? aliasVisible
+                : "(sin alias)";
+
+        String textoIp = (ipRemota != null && !ipRemota.isEmpty())
+                ? ipRemota
+                : "(sin IP)";
+
+        return textoAlias + " (" + textoIp + ")";
     }
 
+
+    /* ===========================
+       Identidad del contacto
+       =========================== */
+
+    /**
+     * Dos contactos SON EL MISMO contacto si comparten idContacto.
+     */
     @Override
     public boolean equals(Object obj) {
 
-        if (this == obj) {
+        if (this == obj) return true;
 
-            return true;
-
-        }
-
-        if (!(obj instanceof Contacto)) {
-
-            return false;
-
-        }
+        if (!(obj instanceof Contacto)) return false;
 
         Contacto otro = (Contacto) obj;
-        return ipRemota.equals(otro.ipRemota);
 
+        return Objects.equals(idContacto, otro.idContacto);
     }
 
     @Override
     public int hashCode() {
-        return ipRemota.hashCode();
+        return Objects.hash(idContacto);
     }
 }

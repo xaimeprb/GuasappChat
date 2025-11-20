@@ -92,17 +92,13 @@ public class MainControladorServidor implements MainServidor.ObservadorServidor 
     }
 
     private void escribirLog(String texto) {
-        if (texto == null) {
-            return;
-        }
-        String contenidoAnterior = areaLog.getText();
-        if (contenidoAnterior == null || contenidoAnterior.isEmpty()) {
-            areaLog.setText(texto);
-        } else {
-            areaLog.setText(contenidoAnterior + System.lineSeparator() + texto);
-        }
-        areaLog.positionCaret(areaLog.getText().length());
+        Platform.runLater(() -> {
+            if (texto == null) return;
+            areaLog.appendText(texto + System.lineSeparator());
+        });
     }
+
+
 
     private void refrescarListaClientes(List<ClienteConectado> nuevosClientes) {
         clientesObservable.setAll(nuevosClientes);

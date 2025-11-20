@@ -162,6 +162,69 @@ public class Conversacion {
         mensajes.add(mensaje);
     }
 
+    /**
+     * Indica si la conversación tiene mensajes
+     */
+    public boolean tieneMensajes() {
+
+        return mensajes != null && !mensajes.isEmpty();
+
+    }
+
+    /**
+     * Devuelve el último mensaje de la conversación
+     */
+    public Mensaje obtenerUltimoMensaje() {
+
+        if (mensajes == null || mensajes.isEmpty()) {
+
+            return null;
+
+        }
+
+        return mensajes.get(mensajes.size() - 1);
+
+    }
+
+    /**
+     * Devuelve un texto corto representativo del último mensaje
+     */
+    public String getPreviewUltimo() {
+
+        Mensaje m = obtenerUltimoMensaje();
+
+        if (m == null) {
+
+            return "";
+
+        }
+
+        if (m.getContenido() != null) {
+
+            return m.getContenido();
+
+        }
+
+        return "";
+
+    }
+
+    /**
+     * Devuelve la fecha del último mensaje en String
+     */
+    public String getFechaUltimoMensaje() {
+
+        Mensaje m = obtenerUltimoMensaje();
+
+        if (m == null || m.getFechaHora() == null) {
+
+            return "";
+
+        }
+
+        return m.getFechaHora().toString();
+    }
+
     @Override
     public String toString() {
 
@@ -185,6 +248,7 @@ public class Conversacion {
         }
 
         Conversacion otra = (Conversacion) obj;
+
         return idConversacion.equals(otra.idConversacion);
 
     }

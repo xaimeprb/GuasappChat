@@ -20,31 +20,42 @@
     </properties>
 
     <dependencies>
-        <!-- Dependencias comunes -->
+        <!-- Módulo común -->
         <dependency>
             <groupId>org.example</groupId>
             <artifactId>general</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- Gson heredado del padre -->
+        <!-- Gson (hereda versión del padre) -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
 
-        <!-- JavaFX para interfaz del servidor -->
+        <!-- JavaFX -->
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
-            <version>${javafx.version}</version>
         </dependency>
 
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <mainClass>psp.chat.server.app.ServidorApp</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

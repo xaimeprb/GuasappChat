@@ -13,6 +13,7 @@ import psp.chat.cliente.modelo.ConversacionLocal;
 import psp.chat.cliente.modelo.UsuarioLocal;
 import psp.chat.cliente.net.ConexionCliente;
 import psp.chat.cliente.persistencia.AjustesRepositorioLocal;
+import psp.chat.general.modelo.Contacto;
 import psp.chat.general.modelo.Conversacion;
 import psp.chat.general.modelo.Mensaje;
 import psp.chat.general.modelo.ResumenConversacion;
@@ -44,6 +45,9 @@ public class MainControladorCliente {
     private ListView<ConversacionLocal> listViewConversaciones;
 
     @FXML
+    private ListView<Contacto> listViewConectados;
+
+    @FXML
     private Label lblNombreContactoActual;
 
     @FXML
@@ -67,6 +71,7 @@ public class MainControladorCliente {
     private AjustesRepositorioLocal ajustesRepositorio;
 
     private final ObservableList<ConversacionLocal> conversaciones = FXCollections.observableArrayList();
+    private final ObservableList<Contacto> conectados = FXCollections.observableArrayList();
 
     private ConversacionLocal conversacionSeleccionada;
 
@@ -101,6 +106,11 @@ public class MainControladorCliente {
 
         // Tras conectar, pedimos al servidor el resumen de conversaciones.
         conexionCliente.solicitarResumenConversaciones();
+
+        mostrarMensajeSistema("Cliente iniciado correctamente");
+
+        listViewConectados.setItems(conectados);
+
     }
 
     /**
@@ -468,4 +478,85 @@ public class MainControladorCliente {
         }
 
     }
+
+    public void mostrarError(String mensaje) {
+
+        Platform.runLater(() -> {
+
+            System.err.println("ERROR CLIENTE: " + mensaje);
+            new Alert(Alert.AlertType.ERROR, mensaje).showAndWait();
+
+        });
+    }
+
+    /**
+     * Muestra un mensaje generado por el sistema como una burbuja gris.
+     */
+    public void mostrarMensajeSistema(String msg) {
+
+        if (msg == null || msg.isBlank()) return;
+
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/psp/chat/cliente/ui/BurbujaMsjReceptor.fxml"));
+                HBox burbuja = loader.load();
+
+                ControladorMsjBurbuja ctrl = loader.getController();
+                ctrl.configurar("Sistema", msg, "");
+
+                contenedorMensajes.getChildren().add(burbuja);
+
+                scrollMensajes.layout();
+                scrollMensajes.setVvalue(1.0);
+
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "No se pudo crear burbuja de mensaje del sistema", e);
+            }
+        });
+    }
+
+
+    public void mostrarMensajeRecibido(String alias, String msg) {
+
+        if (msg == null) return;
+
+        Platform.runLater(() -> {
+            try {
+                FXMLLoader loader = new FXMLLoader(
+                        getClass().getResource("/psp/chat/cliente/ui/BurbujaMsjReceptor.fxml"));
+                HBox burbuja = loader.load();
+
+                ControladorMsjBurbuja ctrl = loader.getController();
+                ctrl.configurar(alias, msg, "");
+
+                contenedorMensajes.getChildren().add(burbuja);
+
+                scrollMensajes.layout();
+                scrollMensajes.setVvalue(1.0);
+
+            } catch (IOException e) {
+                LOG.log(Level.SEVERE, "No se pudo crear burbuja de mensaje recibido", e);
+            }
+        });
+    }
+
+    /**
+     * Callback llamado cuando el servidor envía la lista de contactos conectados.
+     *
+     * @param lista lista de contactos conectados actualmente
+     */
+     public void onListaContactosConectados(List<Contacto> lista) {
+
+        if (lista == null) {
+            return;
+        }
+
+        Platform.runLater(() -> {
+            conectados.clear();
+            conectados.addAll(lista);
+        });
+    }
+
+
 }

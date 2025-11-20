@@ -22,12 +22,14 @@ public class Mensaje {
      * Se inicializan valores por defecto para evitar nulls
      */
     public Mensaje() {
+
         this.idConversacion = "";
         this.remitente = "";
         this.destinatario = "";
         this.tipoMensaje = TipoMensaje.TEXTO;
         this.contenido = "";
         this.fechaHora = LocalDateTime.now();
+
     }
 
     /**
@@ -144,6 +146,14 @@ public class Mensaje {
 
     }
 
+    /**
+     * Alias para compatibilidad con RepositorioConversacion
+     * (ipCliente.equals(m.getDestino()))
+     */
+    public String getDestino() {
+        return destinatario;
+    }
+
     public TipoMensaje getTipoMensaje() {
         return tipoMensaje;
     }
@@ -201,7 +211,8 @@ public class Mensaje {
     @Override
     public String toString() {
 
-        return "Mensaje{conv='" + idConversacion + "', de='" + remitente + "', para='" + destinatario + "', tipo=" + tipoMensaje + ", contenido='" + contenido + "', fecha=" + fechaHora + "}";
+        return "Mensaje{conv='" + idConversacion + "', de='" + remitente + "', para='" + destinatario
+                + "', tipo=" + tipoMensaje + ", contenido='" + contenido + "', fecha=" + fechaHora + "}";
 
     }
 
@@ -222,7 +233,10 @@ public class Mensaje {
 
         Mensaje otro = (Mensaje) obj;
 
-        return idConversacion.equals(otro.idConversacion) && fechaHora.equals(otro.fechaHora) && remitente.equals(otro.remitente) && contenido.equals(otro.contenido);
+        return idConversacion.equals(otro.idConversacion)
+                && fechaHora.equals(otro.fechaHora)
+                && remitente.equals(otro.remitente)
+                && contenido.equals(otro.contenido);
 
     }
 

@@ -47,5 +47,11 @@ public enum TipoComando {
     /**
      * Notificación de error (mensaje de texto en el payload)
      */
-    ERROR
+    ERROR,
+
+    /**
+     * El servidor envía automáticamente a todos los clientes cuando entra y sale alguien
+     */
+    LISTA_CONTACTOS_CONECTADOS
+
 }

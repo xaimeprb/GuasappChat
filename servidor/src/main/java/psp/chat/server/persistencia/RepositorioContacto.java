@@ -4,6 +4,8 @@ import psp.chat.general.modelo.Contacto;
 import psp.chat.general.util.JsonUtil;
 import psp.chat.general.util.ArchivoUtil;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -11,30 +13,48 @@ import java.util.List;
 /**
  * Repositorio encargado de gestionar la lista de contactos del servidor.
  *
- * Funciona así:
- *  - Carga contactos desde un archivo JSON al iniciar.
- *  - Mantiene la lista en memoria.
- *  - Permite crear un contacto si no existe (basado en IP).
- *  - Guarda automáticamente en disco tras cada modificación.
+ * Identidad del contacto = IP remota.
+ *
+ * Cada IP corresponde a un único Contacto.
+ * Si se conecta alguien con la misma IP, se reutiliza el contacto
+ * y se actualiza el alias en LOGIN.
  */
 public class RepositorioContacto {
 
-    private final String archivoContactos = "data.contactos/contactos.json";
+    private final Path archivoContactos = Path.of("data.contactos/contactos.json");
+
     private final JsonUtil jsonUtil;
     private final List<Contacto> contactos;
 
     public RepositorioContacto(JsonUtil jsonUtil) {
         this.jsonUtil = jsonUtil;
+        asegurarEstructuraArchivos();
         this.contactos = cargarDesdeArchivo();
     }
 
+    private void asegurarEstructuraArchivos() {
+        try {
+            Path carpeta = archivoContactos.getParent();
+
+            if (carpeta != null && !Files.exists(carpeta)) {
+                Files.createDirectories(carpeta);
+            }
+
+            if (!Files.exists(archivoContactos)) {
+                Files.createFile(archivoContactos);
+                ArchivoUtil.guardarTexto(archivoContactos, "[]");
+            }
+
+        } catch (IOException e) {
+            throw new RuntimeException("No se pudo preparar archivo de contactos", e);
+        }
+    }
+
     /**
-     * Obtiene un contacto por IP.
+     * Busca un contacto por IP.
      */
     public Contacto buscarPorIp(String ip) {
-        if (ip == null || ip.isEmpty()) {
-            return null;
-        }
+        if (ip == null || ip.isBlank()) return null;
 
         for (Contacto c : contactos) {
             if (c != null && ip.equals(c.getIpRemota())) {
@@ -45,50 +65,51 @@ public class RepositorioContacto {
     }
 
     /**
-     * Crea un contacto si no existe.
-     * Si existe, lo devuelve.
+     * Devuelve un contacto existente o crea uno nuevo si no existe.
      */
     public Contacto crearContactoSiNoExiste(String ip) {
-        if (ip == null || ip.isEmpty()) {
-            return null;
-        }
+        if (ip == null || ip.isBlank()) return null;
 
         Contacto existente = buscarPorIp(ip);
-        if (existente != null) {
-            return existente;
-        }
+        if (existente != null) return existente;
 
-        Contacto nuevo = new Contacto(ip, ""); // alias vacío por defecto
+        Contacto nuevo = new Contacto(ip, "");
         contactos.add(nuevo);
         guardarEnArchivo();
         return nuevo;
     }
 
     /**
-     * Guarda el estado actual en JSON.
+     * Guarda o actualiza un contacto (identidad = IP).
      */
-    private void guardarEnArchivo() {
-        String json = jsonUtil.toJson(contactos);
-        ArchivoUtil.guardarTexto(Path.of(archivoContactos), json);
-    }
+    public void guardar(Contacto contacto) {
+        if (contacto == null) return;
 
-    /**
-     * Carga la lista desde JSON.
-     */
-    private List<Contacto> cargarDesdeArchivo() {
-        String json = ArchivoUtil.leerTexto(Path.of(archivoContactos));
-
-        List<Contacto> lista = jsonUtil.fromJsonLista(json, Contacto.class);
-        if (lista == null) {
-            return new ArrayList<>();
+        for (int i = 0; i < contactos.size(); i++) {
+            if (contacto.getIpRemota().equals(contactos.get(i).getIpRemota())) {
+                contactos.set(i, contacto);
+                guardarEnArchivo();
+                return;
+            }
         }
-        return lista;
+
+        contactos.add(contacto);
+        guardarEnArchivo();
     }
 
-    /**
-     * Para debug y administración futura.
-     */
     public List<Contacto> obtenerTodos() {
         return new ArrayList<>(contactos);
+    }
+
+    private void guardarEnArchivo() {
+        ArchivoUtil.guardarTexto(archivoContactos, jsonUtil.toJson(contactos));
+    }
+
+    private List<Contacto> cargarDesdeArchivo() {
+        String json = ArchivoUtil.leerTexto(archivoContactos);
+        if (json == null || json.isBlank()) return new ArrayList<>();
+
+        List<Contacto> lista = jsonUtil.fromJsonLista(json, Contacto.class);
+        return (lista != null) ? lista : new ArrayList<>();
     }
 }

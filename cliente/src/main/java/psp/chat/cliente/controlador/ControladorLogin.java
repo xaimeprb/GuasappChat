@@ -50,19 +50,21 @@ public class ControladorLogin {
         // Rellenamos los campos con los últimos datos guardados, en caso de que existan
         String ultimoServidor = ajustesRepositorio.cargarUltimoServidor();
 
-        if (ultimoServidor != null) {
+        if (ultimoServidor != null && !ultimoServidor.isBlank()) {
 
             txtServidor.setText(ultimoServidor);
 
         }
 
-        String ultmoAlias = ajustesRepositorio.cargarUltimoAlias();
+        String ultimoAlias = ajustesRepositorio.cargarUltimoAlias();
 
-        if (ultmoAlias != null) {
+        if (ultimoAlias != null && !ultimoAlias.isBlank()) {
 
-            txtAlias.setText(ultmoAlias);
+            txtAlias.setText(ultimoAlias);
 
         }
+
+        lblError.setText("");  // limpiamos error
 
     }
 

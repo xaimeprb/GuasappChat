@@ -1,5 +1,6 @@
 package psp.chat.server.net;
 
+import psp.chat.general.modelo.Conversacion;
 import psp.chat.general.modelo.Mensaje;
 import psp.chat.general.modelo.ResumenConversacion;
 import psp.chat.general.net.EmpaquetadoDatos;
@@ -16,13 +17,13 @@ import java.util.List;
 /**
  * Gestiona la comunicación con UN solo cliente.
  *
- * Cada conexión tiene su propio hilo SesionCliente que:
- *   - Lee comandos del cliente
- *   - Los interpreta
- *   - Interactúa con los repositorios
- *   - Responde con objetos JSON empaquetados
+ * Un hilo por sesión:
+ *   - Lee JSON línea a línea
+ *   - Decodifica comandos
+ *   - Interactúa con repositorios
+ *   - Envía respuestas JSON empaquetadas
  *
- * Esta clase NO conoce JavaFX ni UI.
+ * Esta clase NUNCA toca la capa de UI (JavaFX).
  */
 public class SesionCliente implements Runnable {
 
@@ -55,18 +56,20 @@ public class SesionCliente implements Runnable {
 
     @Override
     public void run() {
+
         try {
 
             entrada = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             salida = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             activa = true;
 
-            mainServidor.escribirLog("Nueva sesión cliente abierta: " + cliente.descripcionCorta());
+            mainServidor.escribirLog("Nueva sesión creada: " + cliente.descripcionCorta());
 
             while (activa) {
 
                 String linea = entrada.readLine();
 
+                // Cliente cerró socket
                 if (linea == null) {
                     detener();
                     break;
@@ -87,6 +90,7 @@ public class SesionCliente implements Runnable {
     }
 
     private void procesarLinea(String linea) {
+
         if (linea == null) {
             return;
         }
@@ -111,8 +115,16 @@ public class SesionCliente implements Runnable {
 
         switch (comando) {
 
+            case LOGIN:
+                procesarLogin(paquete.getPayloadJson());
+                break;
+
             case LISTA_CONVERSACIONES:
                 procesarListarConversaciones();
+                break;
+
+            case HISTORIAL_CONVERSACION:
+                procesarHistorialConversacion(paquete.getPayloadJson());
                 break;
 
             case NUEVO_MENSAJE:
@@ -120,14 +132,58 @@ public class SesionCliente implements Runnable {
                 break;
 
             default:
-                mainServidor.escribirLog("Comando no soportado por servidor: " + comando);
+                mainServidor.escribirLog("Comando NO soportado en servidor: " + comando);
                 break;
         }
     }
 
+
+    /* ==========================================================
+     *                  LÓGICA DE COMANDOS
+     * ========================================================== */
+
     /**
-     * Devuelve al cliente el resumen de conversaciones.
+     * LOGIN → se recibe alias, se guarda en Contacto y se notifica a TODOS.
      */
+    private void procesarLogin(String payloadJson) {
+
+        String alias = json.fromJson(payloadJson, String.class);
+
+        if (alias == null || alias.isBlank()) {
+            alias = "";
+        }
+
+        cliente.getContacto().setAliasVisible(alias);
+
+        repoContacto.guardar(cliente.getContacto());
+
+        mainServidor.escribirLog("LOGIN → " + cliente.getContacto().descripcionCorta());
+
+        // NECESARIO → reenvía alias actualizados a todos
+        mainServidor.enviarListaConectadosATodos();
+    }
+
+
+    private void procesarHistorialConversacion(String payloadJson) {
+
+        String idConversacion = json.fromJson(payloadJson, String.class);
+
+        if (idConversacion == null || idConversacion.isBlank()) {
+            mainServidor.escribirLog("ID de conversación inválido en HISTORIAL_CONVERSACION");
+            return;
+        }
+
+        Conversacion conversacion = repoConversacion.obtenerConversacion(idConversacion);
+
+        EmpaquetadoDatos respuesta = new EmpaquetadoDatos(
+                TipoComando.HISTORIAL_CONVERSACION,
+                json.toJson(conversacion)
+        );
+
+        enviar(respuesta);
+    }
+
+
     private void procesarListarConversaciones() {
 
         List<ResumenConversacion> res = repoConversacion.obtenerResumenes(cliente);
@@ -140,9 +196,7 @@ public class SesionCliente implements Runnable {
         enviar(respuesta);
     }
 
-    /**
-     * Registra un nuevo mensaje y persiste en el servidor.
-     */
+
     private void procesarNuevoMensaje(String payloadJson) {
 
         Mensaje m = json.fromJson(payloadJson, Mensaje.class);
@@ -162,26 +216,37 @@ public class SesionCliente implements Runnable {
         enviar(ack);
     }
 
-    /**
-     * Envía un paquete JSON al cliente.
-     */
-    private void enviar(EmpaquetadoDatos paquete) {
+
+    /* ==========================================================
+     *                       ENVÍO
+     * ========================================================== */
+
+    public void enviar(EmpaquetadoDatos paquete) {
+
         if (paquete == null) {
             return;
         }
+
         salida.println(json.toJson(paquete));
     }
 
-    /**
-     * Cierra la sesión y notifica al servidor principal.
-     */
+    public void enviarPaquete(EmpaquetadoDatos paquete) {
+        enviar(paquete);
+    }
+
+
+    /* ==========================================================
+     *                  CIERRE DE SESIÓN
+     * ========================================================== */
+
     public void detener() {
+
+        if (!activa) return;
+
         activa = false;
 
         try {
-            if (socket != null) {
-                socket.close();
-            }
+            socket.close();
         } catch (IOException ignored) {}
 
         mainServidor.registrarClienteDesconectado(cliente);

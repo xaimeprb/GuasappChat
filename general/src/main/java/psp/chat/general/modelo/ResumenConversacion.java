@@ -12,7 +12,7 @@ public class ResumenConversacion {
     private String ipRemota;
     private String aliasVisible;
     private String ultimoMensaje;
-    private LocalDateTime fechaUltimoMensaje;
+    private String fechaUltimoMensaje;   // ← en servidor se envía como String
     private int mensajesNoLeidos;
 
     /**
@@ -25,58 +25,62 @@ public class ResumenConversacion {
         this.ipRemota = "";
         this.aliasVisible = "";
         this.ultimoMensaje = "";
-        this.fechaUltimoMensaje = null;
+        this.fechaUltimoMensaje = "";
         this.mensajesNoLeidos = 0;
 
     }
 
     /**
-     * Crea un resumen totalmente inicializado
+     * Constructor COMPLETO usado por el servidor.
+     *
+     * Este constructor coincide exactamente con lo que crea tu
+     * RepositorioConversacion en el servidor:
+     *
+     *     new ResumenConversacion(id, ipRemota, aliasVisible, preview, fecha);
+     *
+     * @param idConversacion     identificador de la conversación
+     * @param ipRemota           IP remota del contacto
+     * @param aliasVisible       alias visible del contacto
+     * @param ultimoMensaje      texto del último mensaje
+     * @param fechaUltimoMensaje fecha del último mensaje (String)
      */
-    public ResumenConversacion(String idConversacion, String ipRemota, String aliasVisible, String ultimoMensaje, LocalDateTime fechaUltimoMensaje, int mensajesNoLeidos) {
+    public ResumenConversacion(String idConversacion,
+                               String ipRemota,
+                               String aliasVisible,
+                               String ultimoMensaje,
+                               String fechaUltimoMensaje) {
 
         if (idConversacion != null) {
-
             this.idConversacion = idConversacion;
-
         } else {
-
             this.idConversacion = "";
-
         }
 
         if (ipRemota != null) {
-
             this.ipRemota = ipRemota;
-
         } else {
-
             this.ipRemota = "";
-
         }
 
         if (aliasVisible != null) {
-
             this.aliasVisible = aliasVisible;
-
         } else {
-
             this.aliasVisible = "";
-
         }
 
         if (ultimoMensaje != null) {
-
             this.ultimoMensaje = ultimoMensaje;
-
         } else {
-
             this.ultimoMensaje = "";
-
         }
 
-        this.fechaUltimoMensaje = fechaUltimoMensaje;
-        this.mensajesNoLeidos = mensajesNoLeidos;
+        if (fechaUltimoMensaje != null) {
+            this.fechaUltimoMensaje = fechaUltimoMensaje;
+        } else {
+            this.fechaUltimoMensaje = "";
+        }
+
+        this.mensajesNoLeidos = 0;
     }
 
     public String getIdConversacion() {
@@ -131,12 +135,17 @@ public class ResumenConversacion {
         }
     }
 
-    public LocalDateTime getFechaUltimoMensaje() {
+    public String getFechaUltimoMensaje() {
         return fechaUltimoMensaje;
     }
 
-    public void setFechaUltimoMensaje(LocalDateTime fechaUltimoMensaje) {
-        this.fechaUltimoMensaje = fechaUltimoMensaje;
+    public void setFechaUltimoMensaje(String fechaUltimoMensaje) {
+
+        if (fechaUltimoMensaje != null) {
+            this.fechaUltimoMensaje = fechaUltimoMensaje;
+        } else {
+            this.fechaUltimoMensaje = "";
+        }
     }
 
     public int getMensajesNoLeidos() {
@@ -158,8 +167,8 @@ public class ResumenConversacion {
                 "', ip='" + ipRemota +
                 "', alias='" + aliasVisible +
                 "', ultimo='" + ultimoMensaje +
-                "', fecha=" + fechaUltimoMensaje +
-                ", noLeidos=" + mensajesNoLeidos +
+                "', fecha='" + fechaUltimoMensaje +
+                "', noLeidos=" + mensajesNoLeidos +
                 "}";
     }
 
