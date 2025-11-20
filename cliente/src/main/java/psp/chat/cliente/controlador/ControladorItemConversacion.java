@@ -4,12 +4,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import psp.chat.cliente.modelo.ConversacionLocal;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 /**
  * Controlador de la fila de conversación en la lista lateral.
- *
- * Se usa como celda personalizada en la {@link javafx.scene.control.ListView}
+ * Actúa como celda personalizada en la {@link javafx.scene.control.ListView}
  * de conversaciones.
  */
 public class ControladorItemConversacion {
@@ -23,6 +23,9 @@ public class ControladorItemConversacion {
     @FXML
     private Label lblHoraUltimoMensaje;
 
+    /**
+     * Formato estándar de hora para la vista
+     */
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
 
     /**
@@ -31,15 +34,41 @@ public class ControladorItemConversacion {
      * @param conversacion datos locales de la conversación.
      */
     public void configurar(ConversacionLocal conversacion) {
-        lblAlias.setText(conversacion.getAliasVisible());
-        lblUltimoMensaje.setText(conversacion.getUltimoMensajeTexto());
 
-        if (conversacion.getFechaUltimoMensaje() != null) {
-            lblHoraUltimoMensaje.setText(
-                    conversacion.getFechaUltimoMensaje().format(formatter)
-            );
-        } else {
-            lblHoraUltimoMensaje.setText("");
+        lblAlias.setText("");
+        lblUltimoMensaje.setText("");
+        lblHoraUltimoMensaje.setText("");
+
+        if (conversacion == null) {
+
+            return; // No hay información que mostrar
+
         }
+
+        String alias = conversacion.getAliasVisible();
+
+        if (alias != null) {
+
+            lblAlias.setText(alias);
+
+        }
+
+        String ultimoMensaje = conversacion.getUltimoMensajeTexto();
+
+        if(ultimoMensaje != null) {
+
+            lblUltimoMensaje.setText(ultimoMensaje);
+
+        }
+
+        LocalDateTime fecha = conversacion.getFechaUltimoMensaje();
+
+        if(fecha != null) {
+
+            lblHoraUltimoMensaje.setText(fecha.format(formatter));
+
+        }
+
     }
+
 }

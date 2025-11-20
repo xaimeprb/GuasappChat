@@ -21,16 +21,21 @@ import java.io.IOException;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador principal de la vista de cliente.
  *
  * Gestiona:
- * - Lista de conversaciones (panel izquierdo).
- * - Mensajes de la conversación seleccionada (panel derecho).
- * - Interacción con la conexión de red {@link ConexionCliente}.
+ * - Lista de conversaciones (panel izquierdo)
+ * - Mensajes de la conversación seleccionada (panel derecho)
+ * - Interacción con la conexión de red {@link ConexionCliente}
+ * - Lógica de UI
  */
 public class MainControladorCliente {
+
+    private static final Logger LOG = Logger.getLogger(MainControladorCliente.class.getName());
 
     @FXML
     private BorderPane root;
@@ -61,8 +66,7 @@ public class MainControladorCliente {
     private ConexionCliente conexionCliente;
     private AjustesRepositorioLocal ajustesRepositorio;
 
-    private final ObservableList<ConversacionLocal> conversaciones =
-            FXCollections.observableArrayList();
+    private final ObservableList<ConversacionLocal> conversaciones = FXCollections.observableArrayList();
 
     private ConversacionLocal conversacionSeleccionada;
 
@@ -70,12 +74,21 @@ public class MainControladorCliente {
 
     /**
      * Inicializa el controlador con la información del usuario local
-     * y la dirección del servidor.
+     * y la dirección del servidor
      *
-     * @param usuario      usuario local (alias).
-     * @param hostServidor host o IP del servidor.
+     * @param usuario      usuario local (alias)
+     * @param hostServidor host o IP del servidor
      */
     public void inicializar(UsuarioLocal usuario, String hostServidor) {
+
+        if (usuario == null || hostServidor == null) {
+
+            LOG.severe("Inicialización inválida: usuario o servidor null.");
+
+            return;
+
+        }
+
         this.usuario = usuario;
         this.hostServidor = hostServidor;
         this.ajustesRepositorio = new AjustesRepositorioLocal();
@@ -97,37 +110,54 @@ public class MainControladorCliente {
      * - Maneja el cambio de selección.
      */
     private void configurarListViewConversaciones() {
+
         listViewConversaciones.setItems(conversaciones);
 
         listViewConversaciones.setCellFactory(list -> new ListCell<>() {
+
             @Override
-            protected void updateItem(ConversacionLocal conv, boolean empty) {
-                super.updateItem(conv, empty);
-                if (empty || conv == null) {
+            protected void updateItem(ConversacionLocal conversacionLocal, boolean vacio) {
+                
+                super.updateItem(conversacionLocal, vacio);
+
+                if (vacio || conversacionLocal == null) {
+
                     setGraphic(null);
+
                 } else {
+
                     try {
-                        FXMLLoader loader = new FXMLLoader(
-                                getClass().getResource("/psp/chat/cliente/ui/ItemConversacion.fxml"));
+
+                        FXMLLoader loader = new FXMLLoader(getClass().getResource("/psp/chat/cliente/ui/ItemConversacion.fxml"));
                         HBox rootItem = loader.load();
+
                         ControladorItemConversacion ctrl = loader.getController();
-                        ctrl.configurar(conv);
+                        ctrl.configurar(conversacionLocal);
+
+                        setText(null);
                         setGraphic(rootItem);
+
                     } catch (IOException e) {
-                        e.printStackTrace();
-                        setText(conv.toString());
+
+                        LOG.log(Level.SEVERE, "No se pudo cargar ItemConversacion.fxml", e);
+                        setGraphic(null);
+                        setText(conversacionLocal.toString());
+
                     }
                 }
             }
         });
 
-        listViewConversaciones.getSelectionModel()
-                .selectedItemProperty()
-                .addListener((obs, oldVal, newVal) -> {
-                    if (newVal != null) {
-                        seleccionarConversacion(newVal);
-                    }
-                });
+        listViewConversaciones.getSelectionModel().selectedItemProperty().addListener((obs, viejoValor, nuevoValor) -> {
+
+            if (nuevoValor != null) {
+
+                seleccionarConversacion(nuevoValor);
+
+            }
+
+        });
+
     }
 
     /**
@@ -136,9 +166,11 @@ public class MainControladorCliente {
      *   o si el campo de mensaje está vacío.
      */
     private void configurarBindingsUI() {
+
         btnEnviar.disableProperty().bind(
                 listViewConversaciones.getSelectionModel().selectedItemProperty().isNull()
                         .or(txtMensaje.textProperty().isEmpty()));
+
     }
 
     /**
@@ -147,24 +179,61 @@ public class MainControladorCliente {
      * @param conversacion conversación local seleccionada.
      */
     private void seleccionarConversacion(ConversacionLocal conversacion) {
-        this.conversacionSeleccionada = conversacion;
-        lblNombreContactoActual.setText(conversacion.getAliasVisible());
-        lblIpContactoActual.setText(conversacion.getIpRemota());
+
+        if (conversacion == null) {
+
+            return;
+
+        }
+
+        conversacionSeleccionada = conversacion;
+
+        String alias = conversacion.getAliasVisible();
+
+        if (alias != null) {
+
+            lblNombreContactoActual.setText(alias);
+
+        } else {
+
+            lblNombreContactoActual.setText("");
+
+        }
+
+        String ip = conversacion.getIpRemota();
+
+        if (ip != null) {
+
+            lblIpContactoActual.setText(ip);
+
+        } else {
+
+            lblIpContactoActual.setText("");
+
+        }
 
         contenedorMensajes.getChildren().clear();
 
         if (conversacion.getMensajes().isEmpty()) {
-            // Pedimos el historial al servidor si aún no lo tenemos.
+
             conexionCliente.solicitarHistorialConversacion(conversacion.getIdConversacion());
+
         } else {
-            conversacion.getMensajes().forEach(this::pintarMensaje);
+
+            for (Mensaje m : conversacion.getMensajes()) {
+
+                pintarMensaje(m);
+
+            }
+
         }
+
     }
 
+
     /**
-     * Maneja el clic del botón "Enviar" o acción asociada.
-     *
-     * Envía el mensaje de texto al servidor usando {@link ConexionCliente}.
+     * Maneja el clic del botón "Enviar" o acción asociada
+     * Envía el mensaje de texto al servidor usando {@link ConexionCliente}
      */
     @FXML
     private void manejarEnviarMensaje() {
@@ -172,97 +241,153 @@ public class MainControladorCliente {
             return;
         }
 
-        String texto = txtMensaje.getText().trim();
-        if (texto.isEmpty()) {
+        String texto = txtMensaje.getText();
+
+        if (texto == null) {
+
             return;
+
+        }
+
+        texto = texto.trim();
+
+        if (texto.isEmpty()) {
+
+            return;
+
         }
 
         conexionCliente.enviarMensajeTexto(conversacionSeleccionada, texto);
         txtMensaje.clear();
-    }
 
-    // ============================
-    //  Callbacks desde la conexión
-    // ============================
+    }
 
     /**
      * Callback llamado cuando el servidor envía la lista de conversaciones
-     * (solo resumen).
+     * (solo resumen)
      *
-     * @param resumenes lista de resúmenes de conversación.
+     * @param resumenes lista de resúmenes de conversación
      */
     public void onResumenConversacionesRecibido(List<ResumenConversacion> resumenes) {
+
+        if (resumenes == null) {
+
+            return;
+
+        }
+
         Platform.runLater(() -> {
+
             conversaciones.clear();
-            for (ResumenConversacion r : resumenes) {
+
+            for (ResumenConversacion resumen : resumenes) {
+
                 ConversacionLocal local = new ConversacionLocal(
-                        r.getIdConversacion(),
-                        r.getIpRemota(),
-                        r.getAliasVisible()
+                        resumen.getIdConversacion(),
+                        resumen.getIpRemota(),
+                        resumen.getAliasVisible()
                 );
-                local.actualizarResumen(r);
+
+                local.actualizarResumen(resumen);
                 conversaciones.add(local);
+
             }
         });
     }
 
     /**
-     * Callback llamado cuando el servidor envía el historial completo de una conversación.
-     *
+     * Callback llamado cuando el servidor envía el historial completo de una conversación
      * @param conversacion conversación con todos sus mensajes.
      */
     public void onHistorialConversacionRecibido(Conversacion conversacion) {
+
+        if (conversacion == null) {
+
+            return;
+
+        }
+
         Platform.runLater(() -> {
+
             Optional<ConversacionLocal> localOpt = conversaciones.stream()
                     .filter(c -> c.getIdConversacion().equals(conversacion.getIdConversacion()))
                     .findFirst();
 
             if (localOpt.isEmpty()) {
+
                 return;
+
             }
 
             ConversacionLocal local = localOpt.get();
             local.setMensajes(conversacion.getMensajes());
 
-            if (local == conversacionSeleccionada) {
+            if (local.equals(conversacionSeleccionada)) {
+
                 contenedorMensajes.getChildren().clear();
-                local.getMensajes().forEach(this::pintarMensaje);
+
+                for (Mensaje mensaje : local.getMensajes()) {
+
+                    pintarMensaje(mensaje);
+
+                }
+
             }
+
         });
     }
 
     /**
      * Callback llamado cuando llega un mensaje nuevo (entrante o enviado por nosotros,
-     * según cómo lo usemos desde {@link ConexionCliente}).
+     * según cómo lo usemos desde {@link ConexionCliente})
      *
-     * @param mensaje mensaje recibido.
+     * @param mensaje mensaje recibido
      */
     public void onMensajeEntrante(Mensaje mensaje) {
+
+        if (mensaje == null) {
+
+            return;
+
+        }
+
         Platform.runLater(() -> {
+
             Optional<ConversacionLocal> localOpt = conversaciones.stream()
                     .filter(c -> c.getIdConversacion().equals(mensaje.getIdConversacion()))
                     .findFirst();
 
-            ConversacionLocal local = localOpt.orElseGet(() -> {
-                // Conversación nueva que no teníamos en la lista.
-                ConversacionLocal nueva = new ConversacionLocal(
+            ConversacionLocal local;
+
+            if (localOpt.isPresent()) {
+
+                local = localOpt.get();
+
+            } else {
+
+                local = new ConversacionLocal(
                         mensaje.getIdConversacion(),
                         mensaje.getRemitente(),
                         mensaje.getRemitente()
                 );
-                conversaciones.add(0, nueva);
-                return nueva;
-            });
+
+                conversaciones.add(0, local);
+
+            }
 
             local.anadirMensaje(mensaje);
 
             if (local == conversacionSeleccionada) {
+
                 pintarMensaje(mensaje);
+
             }
 
             listViewConversaciones.refresh();
+
         });
     }
+
 
     /**
      * Pinta una burbuja de mensaje en la conversación actual,
@@ -271,19 +396,49 @@ public class MainControladorCliente {
      * @param mensaje mensaje a representar.
      */
     private void pintarMensaje(Mensaje mensaje) {
+
+        if (mensaje == null || mensaje.getRemitente() == null) {
+
+            LOG.warning("Mensaje inválido recibido.");
+
+            return;
+
+        }
+
         try {
             boolean esPropio = mensaje.getRemitente()
                     .equalsIgnoreCase(usuario.getAlias());
 
-            String recursoFXML = esPropio
-                    ? "/psp/chat/cliente/ui/BurbujaMsjEmisor.fxml"
-                    : "/psp/chat/cliente/ui/BurbujaMsjReceptor.fxml";
+            String recursoFXML;
+
+            if (esPropio) {
+
+                recursoFXML = "/psp/chat/cliente/ui/BurbujaMsjEmisor.fxml";
+
+            } else {
+
+                recursoFXML = "/psp/chat/cliente/ui/BurbujaMsjReceptor.fxml";
+
+            }
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource(recursoFXML));
             HBox burbuja = loader.load();
 
             ControladorMsjBurbuja ctrl = loader.getController();
-            String hora = mensaje.getFechaHora().format(formatterHora);
+
+            String hora;
+
+            if (mensaje.getFechaHora() != null) {
+
+                hora = mensaje.getFechaHora().format(formatterHora);
+
+            } else {
+
+                hora = "";
+
+            }
+
+
             ctrl.configurar(mensaje.getRemitente(), mensaje.getContenido(), hora);
 
             contenedorMensajes.getChildren().add(burbuja);
@@ -293,7 +448,9 @@ public class MainControladorCliente {
             scrollMensajes.setVvalue(1.0);
 
         } catch (IOException e) {
-            e.printStackTrace();
+
+            LOG.log(Level.SEVERE, "No se pudo cargar burbuja de mensaje", e);
+
         }
     }
 
@@ -303,8 +460,12 @@ public class MainControladorCliente {
      * Pensado para llamarse al cerrar la ventana o desde un menú.
      */
     public void cerrarConexion() {
+
         if (conexionCliente != null) {
+
             conexionCliente.cerrar();
+
         }
+
     }
 }

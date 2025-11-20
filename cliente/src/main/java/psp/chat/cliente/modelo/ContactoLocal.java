@@ -1,9 +1,8 @@
 package psp.chat.cliente.modelo;
 
 /**
- * Representa los datos de un contacto en el cliente:
- * - IP remota.
- * - Alias asociado por el usuario.
+ * Representa los datos de un contacto en el cliente
+ * Contiene la IP remota y el alias asignado por el usuario
  */
 public class ContactoLocal {
 
@@ -11,14 +10,31 @@ public class ContactoLocal {
     private String alias;
 
     /**
-     * Crea un nuevo contacto local.
+     * Crea un nuevo contacto local
      *
-     * @param ipRemota IP o identificador remoto.
-     * @param alias    nombre que el usuario ha asignado a esa IP.
+     * @param ipRemota IP o identificador remoto
+     * @param alias alias del contacto, si es null usamos ""
      */
     public ContactoLocal(String ipRemota, String alias) {
+
+        if (ipRemota == null) {
+
+            throw new IllegalArgumentException("La IP remota no puede ser null");
+
+        }
+
         this.ipRemota = ipRemota;
-        this.alias = alias;
+
+        if (alias != null) {
+
+            this.alias = alias;
+
+        } else {
+
+            this.alias = "";
+
+        }
+
     }
 
     /**
@@ -41,6 +57,53 @@ public class ContactoLocal {
      * @param alias nuevo alias.
      */
     public void setAlias(String alias) {
-        this.alias = alias;
+
+        if (alias != null) {
+
+            this.alias = alias;
+
+        } else {
+
+            this.alias = "";
+
+        }
+
     }
+
+    @Override
+    public String toString() {
+
+        return "ContactoLocal {ip='" + ipRemota + "', alias='" + alias + "'}";
+
+    }
+
+    /**
+     * Compara contactos por IP remota.
+     */
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+
+            return true;
+
+        }
+
+        if (!(obj instanceof ContactoLocal)) {
+
+            return false;
+
+        }
+
+        ContactoLocal otro = (ContactoLocal) obj;
+        return ipRemota.equals(otro.ipRemota);
+    }
+
+    @Override
+    public int hashCode() {
+
+        return ipRemota.hashCode();
+
+    }
+
 }

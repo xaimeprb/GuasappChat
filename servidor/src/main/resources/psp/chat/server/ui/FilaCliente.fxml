@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+
+<HBox xmlns="http://javafx.com/javafx/21"
+      xmlns:fx="http://javafx.com/fxml/1"
+      spacing="10"
+      padding="10">
+
+    <!-- Alias + IP -->
+    <VBox spacing="3">
+        <Label fx:id="lblAlias" text="Alias" style="-fx-font-weight: bold;"/>
+        <Label fx:id="lblIp" text="IP del cliente"/>
+    </VBox>
+
+    <!-- Fecha de conexión -->
+    <VBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS">
+        <Label fx:id="lblHora" text="00:00"/>
+    </VBox>
+
+</HBox>

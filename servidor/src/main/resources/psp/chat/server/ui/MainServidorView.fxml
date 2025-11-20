@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane xmlns="http://javafx.com/javafx/21"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="psp.chat.server.controlador.MainControladorServidor">
+
+    <!-- PANEL SUPERIOR - BOTONES -->
+    <top>
+        <HBox spacing="10" padding="10">
+            <Button fx:id="btnArrancar" text="Arrancar servidor" prefWidth="150"/>
+            <Button fx:id="btnDetener" text="Detener servidor" prefWidth="150"/>
+        </HBox>
+    </top>
+
+    <!-- PANEL IZQUIERDO - LISTA DE CLIENTES -->
+    <left>
+        <VBox spacing="5" padding="10" prefWidth="230">
+            <Label text="Clientes conectados" style="-fx-font-weight: bold;"/>
+            <ListView fx:id="listaClientes" prefHeight="400"/>
+        </VBox>
+    </left>
+
+    <!-- PANEL CENTRAL - LOG -->
+    <center>
+        <VBox padding="10">
+            <Label text="Log del servidor" style="-fx-font-weight: bold;"/>
+            <TextArea fx:id="areaLog"
+                      prefHeight="500"
+                      wrapText="true"
+                      editable="false"
+                      style="-fx-control-inner-background: #1E1E1E;
+                             -fx-text-fill: #E8E8E8;
+                             -fx-font-family: Consolas;
+                             -fx-font-size: 12px;"/>
+        </VBox>
+    </center>
+
+</BorderPane>

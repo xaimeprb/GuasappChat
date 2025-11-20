@@ -5,8 +5,8 @@ import psp.chat.general.net.TipoMensaje;
 import java.time.LocalDateTime;
 
 /**
- * Representa un mensaje dentro de una conversación.
- * Incluye información de remitente, destinatario, tipo y contenido.
+ * Representa un mensaje dentro de una conversación
+ * Incluye remitente, destinatario, tipo, contenido y fecha/hora
  */
 public class Mensaje {
 
@@ -18,126 +18,216 @@ public class Mensaje {
     private LocalDateTime fechaHora;
 
     /**
-     * Constructor vacío requerido por Gson para deserializar.
+     * Constructor vacío requerido por Gson
+     * Se inicializan valores por defecto para evitar nulls
      */
     public Mensaje() {
-    }
-
-    /**
-     * Crea un mensaje nuevo. La fecha/hora se toma en el momento de crear el objeto.
-     *
-     * @param idConversacion identificador de la conversación a la que pertenece el mensaje.
-     * @param remitente      identificador o alias del emisor.
-     * @param destinatario   identificador o alias del receptor.
-     * @param tipoMensaje    tipo de mensaje (texto, imagen, etc.).
-     * @param contenido      contenido del mensaje.
-     */
-    public Mensaje(String idConversacion,
-                   String remitente,
-                   String destinatario,
-                   TipoMensaje tipoMensaje,
-                   String contenido) {
-        this.idConversacion = idConversacion;
-        this.remitente = remitente;
-        this.destinatario = destinatario;
-        this.tipoMensaje = tipoMensaje;
-        this.contenido = contenido;
+        this.idConversacion = "";
+        this.remitente = "";
+        this.destinatario = "";
+        this.tipoMensaje = TipoMensaje.TEXTO;
+        this.contenido = "";
         this.fechaHora = LocalDateTime.now();
     }
 
     /**
-     * @return identificador de la conversación.
+     * Crea un mensaje nuevo
+     * La fecha/hora se toma en el instante de creación
      */
+    public Mensaje(String idConversacion, String remitente, String destinatario, TipoMensaje tipoMensaje, String contenido) {
+
+        if (idConversacion != null) {
+
+            this.idConversacion = idConversacion;
+
+        } else {
+
+            this.idConversacion = "";
+
+        }
+
+        if (remitente != null) {
+
+            this.remitente = remitente;
+
+        } else {
+
+            this.remitente = "";
+
+        }
+
+        if (destinatario != null) {
+
+            this.destinatario = destinatario;
+
+        } else {
+
+            this.destinatario = "";
+
+        }
+
+        if (tipoMensaje != null) {
+
+            this.tipoMensaje = tipoMensaje;
+
+        } else {
+
+            this.tipoMensaje = TipoMensaje.TEXTO;
+
+        }
+
+        if (contenido != null) {
+
+            this.contenido = contenido;
+
+        } else {
+
+            this.contenido = "";
+
+        }
+
+        this.fechaHora = LocalDateTime.now();
+
+    }
+
     public String getIdConversacion() {
         return idConversacion;
     }
 
-    /**
-     * Establece el identificador de la conversación.
-     *
-     * @param idConversacion nuevo identificador.
-     */
     public void setIdConversacion(String idConversacion) {
-        this.idConversacion = idConversacion;
+
+        if (idConversacion != null) {
+
+            this.idConversacion = idConversacion;
+
+        } else {
+
+            this.idConversacion = "";
+
+        }
+
     }
 
-    /**
-     * @return remitente del mensaje.
-     */
     public String getRemitente() {
         return remitente;
     }
 
-    /**
-     * Establece el remitente del mensaje.
-     *
-     * @param remitente nuevo remitente.
-     */
     public void setRemitente(String remitente) {
-        this.remitente = remitente;
+
+        if (remitente != null) {
+
+            this.remitente = remitente;
+
+        } else {
+
+            this.remitente = "";
+
+        }
+
     }
 
-    /**
-     * @return destinatario del mensaje.
-     */
     public String getDestinatario() {
         return destinatario;
     }
 
-    /**
-     * Establece el destinatario del mensaje.
-     *
-     * @param destinatario nuevo destinatario.
-     */
     public void setDestinatario(String destinatario) {
-        this.destinatario = destinatario;
+
+        if (destinatario != null) {
+
+            this.destinatario = destinatario;
+
+        } else {
+
+            this.destinatario = "";
+
+        }
+
     }
 
-    /**
-     * @return tipo de mensaje (texto, archivo, etc.).
-     */
     public TipoMensaje getTipoMensaje() {
         return tipoMensaje;
     }
 
-    /**
-     * Cambia el tipo de mensaje.
-     *
-     * @param tipoMensaje nuevo tipo.
-     */
     public void setTipoMensaje(TipoMensaje tipoMensaje) {
-        this.tipoMensaje = tipoMensaje;
+
+        if (tipoMensaje != null) {
+
+            this.tipoMensaje = tipoMensaje;
+
+        } else {
+
+            this.tipoMensaje = TipoMensaje.TEXTO;
+
+        }
+
     }
 
-    /**
-     * @return contenido textual del mensaje.
-     */
     public String getContenido() {
         return contenido;
     }
 
-    /**
-     * Establece el contenido textual del mensaje.
-     *
-     * @param contenido nuevo contenido.
-     */
     public void setContenido(String contenido) {
-        this.contenido = contenido;
+
+        if (contenido != null) {
+
+            this.contenido = contenido;
+
+        } else {
+
+            this.contenido = "";
+
+        }
+
     }
 
-    /**
-     * @return fecha y hora en la que se creó el mensaje.
-     */
     public LocalDateTime getFechaHora() {
         return fechaHora;
     }
 
-    /**
-     * Permite ajustar la fecha/hora del mensaje (por ejemplo, al reconstruir histórico).
-     *
-     * @param fechaHora fecha y hora a establecer.
-     */
     public void setFechaHora(LocalDateTime fechaHora) {
-        this.fechaHora = fechaHora;
+
+        if (fechaHora != null) {
+
+            this.fechaHora = fechaHora;
+
+        } else {
+
+            this.fechaHora = LocalDateTime.now();
+
+        }
+
+    }
+
+    @Override
+    public String toString() {
+
+        return "Mensaje{conv='" + idConversacion + "', de='" + remitente + "', para='" + destinatario + "', tipo=" + tipoMensaje + ", contenido='" + contenido + "', fecha=" + fechaHora + "}";
+
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+
+            return true;
+
+        }
+
+        if (!(obj instanceof Mensaje)) {
+
+            return false;
+
+        }
+
+        Mensaje otro = (Mensaje) obj;
+
+        return idConversacion.equals(otro.idConversacion) && fechaHora.equals(otro.fechaHora) && remitente.equals(otro.remitente) && contenido.equals(otro.contenido);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return idConversacion.hashCode();
     }
 }

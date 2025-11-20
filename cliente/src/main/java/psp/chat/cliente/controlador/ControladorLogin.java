@@ -11,14 +11,19 @@ import psp.chat.cliente.modelo.UsuarioLocal;
 import psp.chat.cliente.persistencia.AjustesRepositorioLocal;
 
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controlador de la pantalla de login del cliente.
- *
- * Gestiona la introducción del alias del usuario y la dirección
- * del servidor, así como el salto a la ventana principal del chat.
+ * Gestiona la introducción del alias del usuario, la dirección
+ * del servidor y a la ventana principal del chat.
  */
 public class ControladorLogin {
+
+    private static final Logger LOG = Logger.getLogger(ControladorLogin.class.getName());
+    private static final String MAIN_VIEW = "/psp/chat/cliente/ui/MainClienteView.fxml";
+
 
     @FXML
     private TextField txtServidor;
@@ -38,12 +43,27 @@ public class ControladorLogin {
      * @param stage ventana sobre la que se mostrará la UI.
      */
     public void inicializar(Stage stage) {
+
         this.stage = stage;
         this.ajustesRepositorio = new AjustesRepositorioLocal();
 
-        // Rellenar campos con los últimos datos guardados, si existen.
-        txtServidor.setText(ajustesRepositorio.cargarUltimoServidor());
-        txtAlias.setText(ajustesRepositorio.cargarUltimoAlias());
+        // Rellenamos los campos con los últimos datos guardados, en caso de que existan
+        String ultimoServidor = ajustesRepositorio.cargarUltimoServidor();
+
+        if (ultimoServidor != null) {
+
+            txtServidor.setText(ultimoServidor);
+
+        }
+
+        String ultmoAlias = ajustesRepositorio.cargarUltimoAlias();
+
+        if (ultmoAlias != null) {
+
+            txtAlias.setText(ultmoAlias);
+
+        }
+
     }
 
     /**
@@ -58,40 +78,84 @@ public class ControladorLogin {
      */
     @FXML
     private void manejarConectar(ActionEvent event) {
-        lblError.setText(""); // limpiar error previo
 
-        String servidor = txtServidor.getText().trim();
-        String alias = txtAlias.getText().trim();
+        limpiarError();
 
-        if (servidor.isEmpty()) {
-            servidor = "localhost";
+        String servidor = txtServidor.getText();
+
+        if (servidor != null) {
+
+            servidor = servidor.trim();
+
         }
 
-        if (alias.isEmpty()) {
-            lblError.setText("Introduce un alias.");
+        if (servidor == null || servidor.isEmpty()) {
+
+            servidor = "localhost";
+
+        }
+
+        String alias = txtAlias.getText();
+
+        if (alias != null) {
+
+            alias = alias.trim();
+
+        }
+
+        if (alias == null || alias.isEmpty()) {
+
             return;
+
         }
 
         ajustesRepositorio.guardarUltimoServidorYAalias(servidor, alias);
 
         UsuarioLocal usuario = new UsuarioLocal(alias);
 
+        cargarPantallaPrincipal(usuario, servidor);
+
+    }
+
+    /**
+     * Carga la vista principal del cliente
+     */
+    private void cargarPantallaPrincipal(UsuarioLocal usuario, String servidor) {
+
         try {
-            FXMLLoader loader = new FXMLLoader(
-                    getClass().getResource("/psp/chat/cliente/ui/MainClienteView.fxml"));
+
+            FXMLLoader loader = new FXMLLoader(getClass().getResource(MAIN_VIEW));
             Scene scene = new Scene(loader.load());
 
             MainControladorCliente controlador = loader.getController();
+
+            if(controlador == null) {
+
+                LOG.severe("Error al cargar el controlador");
+
+                return;
+
+            }
+
             controlador.inicializar(usuario, servidor);
 
-            stage.setTitle("GuasappChat - " + alias);
+            stage.setTitle("GuasappChat - " + usuario.getAlias());
             stage.setScene(scene);
             stage.setResizable(true);
             stage.show();
 
-        } catch (IOException e) {
-            lblError.setText("No se pudo cargar la vista principal.");
-            e.printStackTrace();
+        }  catch (IOException e) {
+
+            LOG.log(Level.SEVERE, "No se pudo cargar la vista principal: " + MAIN_VIEW, e);
+
         }
+
     }
+
+    private void limpiarError() {
+
+        lblError.setText("");
+
+    }
+
 }

@@ -11,6 +11,8 @@ import psp.chat.general.util.JsonUtil;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Clase responsable de gestionar la conexión de red del cliente
@@ -23,6 +25,8 @@ import java.net.Socket;
  *   mensajes de manera asíncrona.
  */
 public class ConexionCliente {
+
+    private static final Logger LOG = Logger.getLogger(ConexionCliente.class.getName());
 
     private final String host;
     private final int puerto;
@@ -44,14 +48,32 @@ public class ConexionCliente {
      * @param usuario     usuario local.
      * @param controlador controlador principal para callbacks.
      */
-    public ConexionCliente(String host, int puerto,
-                           UsuarioLocal usuario,
-                           MainControladorCliente controlador) {
+    public ConexionCliente(String host,int puerto, UsuarioLocal usuario, MainControladorCliente controlador) {
+
+        if (host == null) {
+
+            throw new IllegalArgumentException("host no puede ser null");
+
+        }
+
+        if (usuario == null) {
+
+            throw new IllegalArgumentException("usuario no puede ser null");
+
+        }
+
+        if (controlador == null) {
+
+            throw new IllegalArgumentException("controlador no puede ser null");
+
+        }
+
         this.host = host;
         this.puerto = puerto;
         this.usuario = usuario;
         this.controlador = controlador;
         this.jsonUtil = new JsonUtil();
+
     }
 
     /**
@@ -60,39 +82,62 @@ public class ConexionCliente {
      * Envía además un comando de LOGIN al servidor con el alias del usuario.
      */
     public void conectar() {
+
         try {
+
             socket = new Socket(host, puerto);
 
-            out = new PrintWriter(
-                    new OutputStreamWriter(socket.getOutputStream(), "UTF-8"),
-                    true);
+            out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"),true);
 
-            in = new BufferedReader(
-                    new InputStreamReader(socket.getInputStream(), "UTF-8"));
+            in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
 
             handler = new HandlerProtocoloCliente(in, controlador, jsonUtil);
+
             Thread hilo = new Thread(handler, "HandlerProtocoloCliente");
+
             hilo.setDaemon(true);
+
             hilo.start();
 
-            // Enviar comando de LOGIN
-            String payloadLogin = jsonUtil.toJson(usuario.getAlias());
+            String alias = usuario.getAlias();
+
+            if (alias == null) {
+
+                alias = "";
+
+            }
+
+            String payloadLogin = jsonUtil.toJson(alias);
+
             EmpaquetadoDatos login = new EmpaquetadoDatos(TipoComando.LOGIN, payloadLogin);
+
             enviarEmpaquetado(login);
 
         } catch (IOException e) {
-            // Más adelante: aquí se integrará la reconexión.
-            e.printStackTrace();
+
+            LOG.log(Level.SEVERE, "Error al conectar con el servidor: " + e.getMessage(), e);
+
         }
+
     }
 
     /**
-     * Solicita al servidor la lista de conversaciones asociadas al usuario.
+     * Solicita al servidor la lista de conversaciones asociadas al usuario
      */
     public void solicitarResumenConversaciones() {
-        String payload = jsonUtil.toJson(usuario.getAlias());
-        EmpaquetadoDatos paquete =
-                new EmpaquetadoDatos(TipoComando.LISTA_CONVERSACIONES, payload);
+
+        String alias = usuario.getAlias();
+
+        if (alias == null) {
+
+            alias = "";
+
+        }
+
+        String payload = jsonUtil.toJson(alias);
+
+        EmpaquetadoDatos paquete = new EmpaquetadoDatos(TipoComando.LISTA_CONVERSACIONES, payload);
+
         enviarEmpaquetado(paquete);
     }
 
@@ -102,10 +147,19 @@ public class ConexionCliente {
      * @param idConversacion identificador de la conversación.
      */
     public void solicitarHistorialConversacion(String idConversacion) {
+
+        if (idConversacion == null) {
+
+            return;
+
+        }
+
         String payload = jsonUtil.toJson(idConversacion);
-        EmpaquetadoDatos paquete =
-                new EmpaquetadoDatos(TipoComando.HISTORIAL_CONVERSACION, payload);
+
+        EmpaquetadoDatos paquete = new EmpaquetadoDatos(TipoComando.HISTORIAL_CONVERSACION, payload);
+
         enviarEmpaquetado(paquete);
+
     }
 
     /**
@@ -115,50 +169,89 @@ public class ConexionCliente {
      * @param texto        contenido textual a enviar.
      */
     public void enviarMensajeTexto(ConversacionLocal conversacion, String texto) {
-        Mensaje mensaje = new Mensaje(
-                conversacion.getIdConversacion(),
-                usuario.getAlias(),
-                conversacion.getIpRemota(),
-                TipoMensaje.TEXTO,
-                texto
-        );
+
+        if (conversacion == null) {
+
+            return;
+
+        }
+
+        if (texto == null) {
+
+            texto = "";
+
+        }
+
+        String id = conversacion.getIdConversacion();
+        String remitente = usuario.getAlias();
+        String destino = conversacion.getIpRemota();
+
+        if (remitente == null) {
+
+            remitente = "";
+
+        }
+
+        Mensaje mensaje = new Mensaje(id,remitente, destino, TipoMensaje.TEXTO, texto);
 
         String payloadMensaje = jsonUtil.toJson(mensaje);
-        EmpaquetadoDatos paquete =
-                new EmpaquetadoDatos(TipoComando.NUEVO_MENSAJE, payloadMensaje);
+
+        EmpaquetadoDatos paquete = new EmpaquetadoDatos(TipoComando.NUEVO_MENSAJE, payloadMensaje);
+
         enviarEmpaquetado(paquete);
 
-        // Reflejamos el envío inmediatamente en la UI como mensaje propio.
+        // Mostrar en UI como mensaje propio
         conversacion.anadirMensaje(mensaje);
         controlador.onMensajeEntrante(mensaje);
     }
 
     /**
-     * Serializa un {@link EmpaquetadoDatos} a JSON y lo envía por el socket.
+     * Serializa un {@link EmpaquetadoDatos} a JSON y lo envía por el socket
      *
-     * @param paquete datos de protocolo a enviar.
+     * @param paquete datos de protocolo a enviar
      */
     private void enviarEmpaquetado(EmpaquetadoDatos paquete) {
-        if (out == null) {
+
+        if (paquete == null) {
+
             return;
+
         }
+
+        if (out == null) {
+
+            return;
+
+        }
+
         String jsonLinea = jsonUtil.toJson(paquete);
         out.println(jsonLinea);
+
     }
 
     /**
      * Cierra la conexión con el servidor y detiene el hilo de lectura.
      */
     public void cerrar() {
+
         try {
+
             if (handler != null) {
+
                 handler.detener();
+
             }
+
             if (socket != null && !socket.isClosed()) {
+
                 socket.close();
+
             }
+
         } catch (IOException e) {
-            e.printStackTrace();
+
+            LOG.log(Level.SEVERE, "Error cerrando conexión: " + e.getMessage(), e);
+
         }
     }
 }

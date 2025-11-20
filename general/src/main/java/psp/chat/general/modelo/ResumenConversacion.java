@@ -3,10 +3,8 @@ package psp.chat.general.modelo;
 import java.time.LocalDateTime;
 
 /**
- * Resumen ligero de una conversación.
- *
- * Se usa para poblar la lista lateral de conversaciones sin
- * tener que cargar todo el historial completo.
+ * Resumen ligero de una conversación
+ * Utilizado para mostrar la lista lateral sin cargar el historial completo
  */
 public class ResumenConversacion {
 
@@ -18,82 +16,121 @@ public class ResumenConversacion {
     private int mensajesNoLeidos;
 
     /**
-     * Constructor vacío requerido por Gson.
+     * Constructor vacío requerido por Gson
+     * Inicializa valores por defecto para evitar nulls
      */
     public ResumenConversacion() {
+
+        this.idConversacion = "";
+        this.ipRemota = "";
+        this.aliasVisible = "";
+        this.ultimoMensaje = "";
+        this.fechaUltimoMensaje = null;
+        this.mensajesNoLeidos = 0;
+
     }
 
     /**
-     * Crea un resumen completamente inicializado.
-     *
-     * @param idConversacion    identificador de la conversación.
-     * @param ipRemota          IP o identificador remoto.
-     * @param aliasVisible      alias a mostrar.
-     * @param ultimoMensaje     texto del último mensaje.
-     * @param fechaUltimoMensaje fecha/hora del último mensaje.
-     * @param mensajesNoLeidos  número de mensajes pendientes de leer.
+     * Crea un resumen totalmente inicializado
      */
-    public ResumenConversacion(String idConversacion,
-                               String ipRemota,
-                               String aliasVisible,
-                               String ultimoMensaje,
-                               LocalDateTime fechaUltimoMensaje,
-                               int mensajesNoLeidos) {
-        this.idConversacion = idConversacion;
-        this.ipRemota = ipRemota;
-        this.aliasVisible = aliasVisible;
-        this.ultimoMensaje = ultimoMensaje;
+    public ResumenConversacion(String idConversacion, String ipRemota, String aliasVisible, String ultimoMensaje, LocalDateTime fechaUltimoMensaje, int mensajesNoLeidos) {
+
+        if (idConversacion != null) {
+
+            this.idConversacion = idConversacion;
+
+        } else {
+
+            this.idConversacion = "";
+
+        }
+
+        if (ipRemota != null) {
+
+            this.ipRemota = ipRemota;
+
+        } else {
+
+            this.ipRemota = "";
+
+        }
+
+        if (aliasVisible != null) {
+
+            this.aliasVisible = aliasVisible;
+
+        } else {
+
+            this.aliasVisible = "";
+
+        }
+
+        if (ultimoMensaje != null) {
+
+            this.ultimoMensaje = ultimoMensaje;
+
+        } else {
+
+            this.ultimoMensaje = "";
+
+        }
+
         this.fechaUltimoMensaje = fechaUltimoMensaje;
         this.mensajesNoLeidos = mensajesNoLeidos;
     }
 
-    /**
-     * @return identificador de la conversación.
-     */
     public String getIdConversacion() {
         return idConversacion;
     }
 
     public void setIdConversacion(String idConversacion) {
-        this.idConversacion = idConversacion;
+
+        if (idConversacion != null) {
+            this.idConversacion = idConversacion;
+        } else {
+            this.idConversacion = "";
+        }
     }
 
-    /**
-     * @return IP o identificador remoto asociado al resumen.
-     */
     public String getIpRemota() {
         return ipRemota;
     }
 
     public void setIpRemota(String ipRemota) {
-        this.ipRemota = ipRemota;
+
+        if (ipRemota != null) {
+            this.ipRemota = ipRemota;
+        } else {
+            this.ipRemota = "";
+        }
     }
 
-    /**
-     * @return alias visible de la conversación.
-     */
     public String getAliasVisible() {
         return aliasVisible;
     }
 
     public void setAliasVisible(String aliasVisible) {
-        this.aliasVisible = aliasVisible;
+
+        if (aliasVisible != null) {
+            this.aliasVisible = aliasVisible;
+        } else {
+            this.aliasVisible = "";
+        }
     }
 
-    /**
-     * @return texto del último mensaje.
-     */
     public String getUltimoMensaje() {
         return ultimoMensaje;
     }
 
     public void setUltimoMensaje(String ultimoMensaje) {
-        this.ultimoMensaje = ultimoMensaje;
+
+        if (ultimoMensaje != null) {
+            this.ultimoMensaje = ultimoMensaje;
+        } else {
+            this.ultimoMensaje = "";
+        }
     }
 
-    /**
-     * @return fecha/hora del último mensaje, o null si no hay mensajes.
-     */
     public LocalDateTime getFechaUltimoMensaje() {
         return fechaUltimoMensaje;
     }
@@ -102,14 +139,47 @@ public class ResumenConversacion {
         this.fechaUltimoMensaje = fechaUltimoMensaje;
     }
 
-    /**
-     * @return número de mensajes no leídos en esta conversación.
-     */
     public int getMensajesNoLeidos() {
         return mensajesNoLeidos;
     }
 
     public void setMensajesNoLeidos(int mensajesNoLeidos) {
-        this.mensajesNoLeidos = mensajesNoLeidos;
+
+        if (mensajesNoLeidos >= 0) {
+            this.mensajesNoLeidos = mensajesNoLeidos;
+        } else {
+            this.mensajesNoLeidos = 0;
+        }
+    }
+
+    @Override
+    public String toString() {
+        return "ResumenConversacion{id='" + idConversacion +
+                "', ip='" + ipRemota +
+                "', alias='" + aliasVisible +
+                "', ultimo='" + ultimoMensaje +
+                "', fecha=" + fechaUltimoMensaje +
+                ", noLeidos=" + mensajesNoLeidos +
+                "}";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+
+        if (this == obj) {
+            return true;
+        }
+
+        if (!(obj instanceof ResumenConversacion)) {
+            return false;
+        }
+
+        ResumenConversacion otra = (ResumenConversacion) obj;
+        return idConversacion.equals(otra.idConversacion);
+    }
+
+    @Override
+    public int hashCode() {
+        return idConversacion.hashCode();
     }
 }
